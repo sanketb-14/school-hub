@@ -158,9 +158,9 @@ export default function AddSchoolPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mb-6 mx-2 sm:mx-0"
+          className="mb-6 mx-2 sm:mx-0 "
         >
-          <div className="alert alert-info shadow-lg glass-effect border-l-4 border-l-amber-500">
+          <div className="alert alert-info shadow-lg glass-effect border-l-4 border-l-amber-500 bg-orange-100">
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
                 <Info className="w-4 h-4 text-white" />
@@ -328,7 +328,7 @@ export default function AddSchoolPage() {
                       ) : (
                         <>
                           <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                          <span className="text-sm sm:text-base">Add School with Default Image</span>
+                          <span className="text-sm sm:text-base">Add School</span>
                         </>
                       )}
                     </button>

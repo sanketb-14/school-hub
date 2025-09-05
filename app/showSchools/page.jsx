@@ -12,6 +12,18 @@ export default function ShowSchoolsPage() {
   const [filterCity, setFilterCity] = useState("")
   const [viewMode, setViewMode] = useState("grid") // 'grid' or 'list'
 
+  // Default school image - same as used in AddSchoolPage
+  const defaultSchoolImage = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=300&fit=crop"
+
+  // Function to get the correct image URL
+  const getSchoolImage = (school) => {
+    if (school.image) {
+      return `/api/schools/images/${school.image}`; // Your uploaded image
+    } else {
+      return defaultSchoolImage; // Default image for schools without uploads
+    }
+  }
+
   // Fetch schools data
   useEffect(() => {
     fetchSchools()
@@ -79,23 +91,22 @@ export default function ShowSchoolsPage() {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
-              {school.image ? (
-                <motion.img
-                  src={`/api/schools/images/${school.image}`}
-                  alt={school.name}
-                  className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <motion.div
-                    className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center"
-                    whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <School className="w-10 h-10 text-white" />
-                  </motion.div>
+              <motion.img
+                src={getSchoolImage(school)}
+                alt={school.name}
+                className="w-full h-full object-cover"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                onError={(e) => {
+                  // Fallback to default image if the image fails to load
+                  e.target.src = defaultSchoolImage;
+                }}
+              />
+              {!school.image && (
+                <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg px-2 py-1">
+                    <span className="text-xs text-white font-medium">Default Image</span>
+                  </div>
                 </div>
               )}
               <motion.div
@@ -173,27 +184,26 @@ export default function ShowSchoolsPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-shrink-0">
               <motion.div
-                className="w-20 h-20 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 rounded-lg overflow-hidden"
+                className="w-20 h-20 bg-gradient-to-br from-blue-100 via-purple-100 to-indigo-100 rounded-lg overflow-hidden relative"
                 whileHover={{ scale: 1.05, rotate: 2 }}
                 transition={{ duration: 0.3 }}
               >
-                {school.image ? (
-                  <motion.img
-                    src={`/api/schools/images/${school.image}`}
-                    alt={school.name}
-                    className="w-full h-full object-cover"
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <motion.div
-                      className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center"
-                      whileHover={{ rotate: 10 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <School className="w-6 h-6 text-white" />
-                    </motion.div>
+                <motion.img
+                  src={getSchoolImage(school)}
+                  alt={school.name}
+                  className="w-full h-full object-cover"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  onError={(e) => {
+                    // Fallback to default image if the image fails to load
+                    e.target.src = defaultSchoolImage;
+                  }}
+                />
+                {!school.image && (
+                  <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                    <div className="bg-white/30 backdrop-blur-sm rounded px-1">
+                      <span className="text-xs text-white font-medium">Default</span>
+                    </div>
                   </div>
                 )}
               </motion.div>
