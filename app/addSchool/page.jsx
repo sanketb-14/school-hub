@@ -3,62 +3,46 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { motion } from "framer-motion"
-import { School, MapPin, Phone, Mail, ImageIcon, Save, AlertCircle, CheckCircle2 } from "lucide-react"
+import { School, MapPin, Phone, Mail, ImageIcon, Save, AlertCircle, CheckCircle2, Info, Cloud, HardDrive } from "lucide-react"
 
 export default function AddSchoolPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
+  
+  // Default school image - you can change this to any school image URL
+  const defaultSchoolImage = "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=300&fit=crop"
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
   } = useForm()
-
-  const watchImage = watch("image")
-
-  // Handle image preview
-  const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const onSubmit = async (data) => {
     setIsSubmitting(true)
     setSubmitStatus(null)
 
     try {
-      const formData = new FormData()
-
-      // Append all form data
-      Object.keys(data).forEach((key) => {
-        if (key === "image" && data[key][0]) {
-          formData.append("image", data[key][0])
-        } else if (key !== "image") {
-          formData.append(key, data[key])
-        }
-      })
+      // Add default image to the data
+      const submissionData = {
+        ...data,
+        image: defaultSchoolImage
+      }
 
       const response = await fetch("/api/schools", {
         method: "POST",
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData),
       })
 
       const result = await response.json()
 
       if (response.ok) {
-        setSubmitStatus({ type: "success", message: "School added successfully!" })
+        setSubmitStatus({ type: "success", message: "School added successfully with default image!" })
         reset()
-        setImagePreview(null)
 
         // Auto-hide success message after 3 seconds
         setTimeout(() => setSubmitStatus(null), 3000)
@@ -169,6 +153,38 @@ export default function AddSchoolPage() {
           </p>
         </div>
 
+        {/* Image Upload Notice */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mb-6 mx-2 sm:mx-0"
+        >
+          <div className="alert alert-info shadow-lg glass-effect border-l-4 border-l-amber-500">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-amber-800 text-sm sm:text-base flex items-center gap-2">
+                  <Cloud className="w-4 h-4" />
+                  Image Upload Notice
+                </h3>
+                <div className="text-xs sm:text-sm text-amber-700 mt-1 leading-relaxed">
+                  <div className="flex items-start gap-2">
+                    <HardDrive className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <strong>Practice Project:</strong> Cloud storage is not configured for production. 
+                      All schools will use a default image. For local development, clone the repository 
+                      to enable full image upload functionality.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Status Messages */}
         {submitStatus && (
           <motion.div
@@ -189,7 +205,7 @@ export default function AddSchoolPage() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
           className="card-modern shadow-2xl mx-2 sm:mx-0"
         >
           <div className="p-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 rounded-2xl">
@@ -202,7 +218,7 @@ export default function AddSchoolPage() {
                         key={field.name}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+                        transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
                         className={field.name === "address" ? "lg:col-span-2" : ""}
                       >
                         <div className="form-control">
@@ -245,11 +261,11 @@ export default function AddSchoolPage() {
                       </motion.div>
                     ))}
 
-                    {/* Image Upload */}
+                    {/* Default Image Preview */}
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + inputFields.length * 0.1, duration: 0.5 }}
+                      transition={{ delay: 0.5 + inputFields.length * 0.1, duration: 0.5 }}
                       className="lg:col-span-2"
                     >
                       <div className="form-control">
@@ -258,39 +274,33 @@ export default function AddSchoolPage() {
                             <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center flex-shrink-0">
                               <ImageIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                             </div>
-                            School Image
+                            School Image (Default)
                           </span>
                         </label>
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4 items-start">
                           <div className="flex-1">
-                            <input
-                              {...register("image")}
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="file-input file-input-bordered w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm min-h-12"
-                            />
+                            <div className="input input-bordered w-full bg-gray-50 text-gray-500 cursor-not-allowed text-sm sm:text-base min-h-12 flex items-center">
+                              Default school image will be used automatically
+                            </div>
                             <div className="label">
                               <span className="label-text-alt text-slate-500 text-xs sm:text-sm">
-                                Accepted formats: JPG, PNG, WebP (Max: 5MB)
+                                📝 Note: Custom image upload available in local development environment only
                               </span>
                             </div>
                           </div>
-                          {imagePreview && (
-                            <div className="flex justify-center sm:justify-start">
-                              <div className="avatar">
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg p-1 bg-gradient-to-r from-blue-500 to-purple-600">
-                                  <div className="w-full h-full rounded-lg overflow-hidden">
-                                    <img
-                                      src={imagePreview || "/placeholder.svg"}
-                                      alt="Preview"
-                                      className="object-cover w-full h-full"
-                                    />
-                                  </div>
+                          <div className="flex justify-center sm:justify-start">
+                            <div className="avatar">
+                              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg p-1 bg-gradient-to-r from-blue-500 to-purple-600">
+                                <div className="w-full h-full rounded-lg overflow-hidden">
+                                  <img
+                                    src={defaultSchoolImage}
+                                    alt="Default school image"
+                                    className="object-cover w-full h-full"
+                                  />
                                 </div>
                               </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -300,7 +310,7 @@ export default function AddSchoolPage() {
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
+                    transition={{ delay: 0.9, duration: 0.5 }}
                     className="form-control mt-6 sm:mt-8"
                   >
                     <button
@@ -318,7 +328,7 @@ export default function AddSchoolPage() {
                       ) : (
                         <>
                           <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                          <span className="text-sm sm:text-base">Add School</span>
+                          <span className="text-sm sm:text-base">Add School with Default Image</span>
                         </>
                       )}
                     </button>
@@ -329,22 +339,33 @@ export default function AddSchoolPage() {
           </div>
         </motion.div>
 
-        {/* Info Card */}
+        {/* Info Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="mt-6 sm:mt-8 mx-2 sm:mx-0"
+          transition={{ delay: 1.1, duration: 0.5 }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 sm:mt-8 mx-2 sm:mx-0"
         >
           <div className="alert shadow-lg glass-effect border-l-4 border-l-blue-500">
             <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center flex-shrink-0">
               <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
             <div>
-              <h3 className="font-heading font-bold text-slate-700 text-sm sm:text-base">Information</h3>
+              <h3 className="font-heading font-bold text-slate-700 text-sm sm:text-base">Required Fields</h3>
               <div className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                All fields marked are required. Make sure to provide accurate information for better school management
-                and searchability.
+                All fields are required for proper school management and searchability.
+              </div>
+            </div>
+          </div>
+          
+          <div className="alert shadow-lg glass-effect border-l-4 border-l-green-500">
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded flex items-center justify-center flex-shrink-0">
+              <HardDrive className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="font-heading font-bold text-slate-700 text-sm sm:text-base">Local Development</h3>
+              <div className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Clone the repository to enable full image upload functionality locally.
               </div>
             </div>
           </div>
