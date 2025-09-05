@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost:3000', 'your-vercel-domain.vercel.app'],
+    domains: ['localhost:3000', 'https://school-hubb.vercel.app'],
     remotePatterns: [
       {
         protocol: 'https',
