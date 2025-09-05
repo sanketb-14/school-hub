@@ -1,16 +1,5 @@
 import { NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { executeQuery } from '@/lib/db'
-
-// Configure the API route
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-}
 
 export async function GET() {
   try {
@@ -30,21 +19,16 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const formData = await request.formData()
+    // Parse JSON data instead of FormData
+    const data = await request.json()
     
-    // Extract form fields
-    const name = formData.get('name')
-    const address = formData.get('address')
-    const city = formData.get('city')
-    const state = formData.get('state')
-    const contact = formData.get('contact')
-    const email_id = formData.get('email_id')
-    const imageFile = formData.get('image')
+    // Extract fields from JSON
+    const { name, address, city, state, contact, email_id, image } = data
 
     // Validate required fields
     if (!name || !address || !city || !state || !contact || !email_id) {
       return NextResponse.json(
-        { error: 'All fields except image are required' },
+        { error: 'All fields are required' },
         { status: 400 }
       )
     }
@@ -67,54 +51,11 @@ export async function POST(request) {
       )
     }
 
-    let imageName = null
-
-    // Handle image upload if provided
-    if (imageFile && imageFile.size > 0) {
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-      if (!allowedTypes.includes(imageFile.type)) {
-        return NextResponse.json(
-          { error: 'Invalid file type. Only JPG, PNG, and WebP are allowed.' },
-          { status: 400 }
-        )
-      }
-
-      // Validate file size (5MB limit)
-      if (imageFile.size > 5 * 1024 * 1024) {
-        return NextResponse.json(
-          { error: 'File size too large. Maximum size is 5MB.' },
-          { status: 400 }
-        )
-      }
-
-      // Generate unique filename
-      const timestamp = Date.now()
-      const originalName = imageFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      imageName = `${timestamp}_${originalName}`
-
-      // Create schoolImages directory if it doesn't exist
-      const uploadDir = join(process.cwd(), 'public', 'schoolImages')
-      try {
-        await mkdir(uploadDir, { recursive: true })
-      } catch (error) {
-        if (error.code !== 'EEXIST') {
-          throw error
-        }
-      }
-
-      // Save the file
-      const bytes = await imageFile.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      const filePath = join(uploadDir, imageName)
-      await writeFile(filePath, buffer)
-    }
-
-    // Insert into database
+    // Insert into database with the image URL
     const result = await executeQuery(
       `INSERT INTO schools (name, address, city, state, contact, image, email_id) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, address, city, state, contact, imageName, email_id]
+      [name, address, city, state, contact, image, email_id]
     )
 
     return NextResponse.json(
